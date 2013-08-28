@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/GLCamera/GLCamera.iml" filepath="$PROJECT_DIR$/GLCamera/GLCamera.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GLCameraExample/GLCameraExample.iml" filepath="$PROJECT_DIR$/GLCameraExample/GLCameraExample.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GLCameraProject.iml" filepath="$PROJECT_DIR$/GLCameraProject.iml" />
+    </modules>
+  </component>
+</project>
+

@@ -1,0 +1,19 @@
+varying mediump vec2 texCoord;
+
+uniform sampler2D yTextureSampler;
+uniform sampler2D uvTextureSampler;
+
+void main(void)
+{
+    lowp vec3 yuv;
+
+    yuv.x = texture2D(yTextureSampler, texCoord).r;
+    yuv.zy = yuv.x = texture2D(uvTextureSampler, texCoord).ra - vec2(0.5, 0.5);
+
+    // Use BT.709 HDTV standard
+    lowp vec3 rgb = mat3(1.0,      1.0,     1.0,
+                         0.0,     -0.18732, 1.8556,
+                         1.57481, -0.46813, 0.0) * yuv;
+
+    gl_FragColor = vec4(rgb, 1.0);
+}
