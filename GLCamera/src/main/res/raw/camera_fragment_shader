@@ -8,7 +8,7 @@ void main(void)
     lowp vec3 yuv;
 
     yuv.x = texture2D(yTextureSampler, texCoord).r;
-    yuv.zy = yuv.x = texture2D(uvTextureSampler, texCoord).ra - vec2(0.5, 0.5);
+    yuv.zy = texture2D(uvTextureSampler, texCoord).ra - vec2(0.5, 0.5);
 
     // Use BT.709 HDTV standard
     lowp vec3 rgb = mat3(1.0,      1.0,     1.0,

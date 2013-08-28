@@ -10,21 +10,19 @@ import java.nio.ByteBuffer;
  * Created by Lawrence on 8/2/13.
  */
 public class CameraPreviewCallback implements Camera.PreviewCallback {
-    private final GLSurfaceView mGLSurfaceView;
-    private final int mWidth;
-    private final int mHeight;
+    private GLSurfaceView mGLSurfaceView;
+    private int mWidth;
+    private int mHeight;
 
     private int mYTexture;
     private int mUVTexture;
 
-    public CameraPreviewCallback(GLSurfaceView surfaceView, int width, int height) {
-        mGLSurfaceView = surfaceView;
-        mWidth = width;
-        mHeight = height;
-    }
-
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
+        if (mWidth == 0 || mHeight == 0 || mGLSurfaceView == null) {
+            return;
+        }
+
         final int yDataLength = mWidth * mHeight;
         final int uvDataLength = data.length - yDataLength;
         final ByteBuffer yPixels = ByteBuffer.wrap(data, 0, yDataLength);
@@ -46,12 +44,28 @@ public class CameraPreviewCallback implements Camera.PreviewCallback {
         });
     }
 
+    public GLSurfaceView getGLSurfaceView() {
+        return mGLSurfaceView;
+    }
+
+    public void setGLSurfaceView(GLSurfaceView glSurfaceView) {
+        mGLSurfaceView = glSurfaceView;
+    }
+
     public int getWidth() {
         return mWidth;
     }
 
+    public void setWidth(int width) {
+        mWidth = width;
+    }
+
     public int getHeight() {
         return mHeight;
+    }
+
+    public void setHeight(int height) {
+        mHeight = height;
     }
 
     public int getYTexture() {

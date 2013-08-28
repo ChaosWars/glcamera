@@ -16,15 +16,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 /**
  * Created by Lawrence on 8/2/13.
  */
 public class CameraRenderer {
 
-    public class Size {
-        public float width;
-        public float height;
+    public static class Size {
+        public int width;
+        public int height;
     }
 
     public interface OnRenderCallback {
@@ -33,6 +34,10 @@ public class CameraRenderer {
     }
 
     private static final String TAG = "CameraRenderer";
+
+    private static final String SHADER_TAG = "CameraShaderProgram";
+    private static final String FRAGMENT_SHADER_TAG = "CameraFragmentShader";
+    private static final String VERTEX_SHADER_TAG = "CameraVertexShader";
 
     private static final String CAMERA_FRAGMENT_SHADER = "CameraFragmentShader";
     private static final String CAMERA_VERTEX_SHADER = "CameraVertexShader";
@@ -55,6 +60,9 @@ public class CameraRenderer {
 
     private VertexBufferObject mVbo;
     private VertexBufferObject mIbo;
+
+    private boolean mBuffersCreated;
+
     private ShaderProgram mShaderProgram;
 
     public void setOnRenderCallback(OnRenderCallback onRenderCallback) {
@@ -81,33 +89,13 @@ public class CameraRenderer {
         }
     }
 
-    private void createShaderProgram(Context context) throws IllegalStateException {
-        String fragmentShaderSrc = readTextFileFromRawResource(context, R.raw.camera_fragment_shader);
-        String vertexShaderSrc = readTextFileFromRawResource(context, R.raw.camera_vertex_shader);
+    public void createBuffers(Size screenSize, Size cameraSize) {
+        Log.d(TAG, "createBuffers");
 
-        Shader fragmentShader = new Shader(Shader.Type.FRAGMENT, fragmentShaderSrc, CAMERA_FRAGMENT_SHADER);
-        Shader vertexShader = new Shader(Shader.Type.VERTEX, vertexShaderSrc, CAMERA_VERTEX_SHADER);
-
-        mShaderProgram = new ShaderProgram();
-        mShaderProgram.addShader(fragmentShader);
-        mShaderProgram.addShader(vertexShader);
-        mShaderProgram.build();
-
-        if (mShaderProgram.isBuilt())
-        {
-            mShaderProgram.use();
-            mShaderProgram.setUniform(Y_TEXTURE_SAMPLER, 0);
-            mShaderProgram.setUniform(UV_TEXTURE_SAMPLER, 0);
+        if (mBuffersCreated) {
+            releaseBuffers();
         }
 
-        if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Build log: " + mShaderProgram.getBuildLog());
-            mShaderProgram.validate();
-            Log.d(TAG, "Validation log: " + mShaderProgram.getValidationLog());
-        }
-    }
-
-    public void createVertexBuffer(Size screenSize, Size cameraSize) {
         float width = screenSize.width / 2.0f;
         float height = screenSize.height / 2.0f;
 
@@ -125,19 +113,84 @@ public class CameraRenderer {
                 s *  cameraSize.height, s *  cameraSize.width, 0.0f, 0.0f, 0.0f
         };
 
-        float[] indices = {0, 1, 2, 3};
+        int[] indices = {0, 1, 2, 3};
 
         FloatBuffer vertexBuffer = FloatBuffer.wrap(vertices);
-        FloatBuffer indexBuffer = FloatBuffer.wrap(indices);
+        IntBuffer indexBuffer = IntBuffer.wrap(indices);
 
         mShaderProgram.use();
-        mShaderProgram.setUniformMatrix4fv(PROJECTION_MATRIX, 16, false, projection, 0);
+        mShaderProgram.setUniformMatrix4fv(PROJECTION_MATRIX, 1, false, projection, 0);
 
         mVbo = new VertexBufferObject(Target.ARRAY_BUFFER, Usage.STATIC_DRAW, vertexBuffer, vertices.length);
         mIbo = new VertexBufferObject(Target.ELEMENT_ARRAY_BUFFER, Usage.STATIC_DRAW, indexBuffer, indices.length);
+
+        mBuffersCreated = true;
+
+        Log.d(TAG, "Buffers created");
+    }
+
+    public void releaseBuffers() {
+        Log.d(TAG, "releaseBuffers");
+
+        if (mVbo != null) {
+            mVbo.release();
+            mVbo = null;
+        }
+
+        if (mIbo != null) {
+            mIbo.release();
+        }
+
+        mBuffersCreated = false;
+    }
+
+    public void releaseShaderProgram() {
+        if (mShaderProgram != null) {
+            mShaderProgram.release();
+            mShaderProgram = null;
+        }
+    }
+
+    private void createShaderProgram(Context context) throws IllegalStateException {
+        String fragmentShaderSrc = readTextFileFromRawResource(context, R.raw.camera_fragment_shader);
+        String vertexShaderSrc = readTextFileFromRawResource(context, R.raw.camera_vertex_shader);
+
+        Shader fragmentShader = new Shader(Shader.Type.FRAGMENT, fragmentShaderSrc, CAMERA_FRAGMENT_SHADER);
+        fragmentShader.setTag(FRAGMENT_SHADER_TAG);
+
+        Shader vertexShader = new Shader(Shader.Type.VERTEX, vertexShaderSrc, CAMERA_VERTEX_SHADER);
+        vertexShader.setTag(VERTEX_SHADER_TAG);
+
+        mShaderProgram = new ShaderProgram();
+        mShaderProgram.setTag(SHADER_TAG);
+
+        mShaderProgram.addShader(fragmentShader);
+        mShaderProgram.addShader(vertexShader);
+
+        mShaderProgram.build();
+
+        mShaderProgram.removeShader(fragmentShader);
+        mShaderProgram.removeShader(vertexShader);
+
+        if (mShaderProgram.isBuilt())
+        {
+            mShaderProgram.use();
+            mShaderProgram.setUniform(Y_TEXTURE_SAMPLER, 0);
+            mShaderProgram.setUniform(UV_TEXTURE_SAMPLER, 1);
+        }
+
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Build log: " + mShaderProgram.getBuildLog());
+            mShaderProgram.validate();
+            Log.d(TAG, "Validation log: " + mShaderProgram.getValidationLog());
+        }
     }
 
     private void renderHelper() {
+        if (!mBuffersCreated || mShaderProgram == null) {
+            return;
+        }
+
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mCameraPreviewCallback.getYTexture());
 

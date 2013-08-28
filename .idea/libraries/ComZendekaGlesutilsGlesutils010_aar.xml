@@ -4,6 +4,8 @@
       <root url="jar://$PROJECT_DIR$/GLCameraExample/build/exploded-bundles/ComZendekaGlesutilsGlesutils010.aar/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../GLESUtilsProject/GLESUtils/src/main/java" />
+    </SOURCES>
   </library>
 </component>

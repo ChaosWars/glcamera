@@ -50,7 +50,7 @@ public class CameraAccess {
         return -1;
     }
 
-    public Camera openCamera(Context context, int cameraId) throws IllegalArgumentException {
+    public static Camera openCamera(Context context, int cameraId) throws IllegalArgumentException {
         if (cameraId < 0) {
             throw new IllegalArgumentException("Invalid camera id");
         }
@@ -72,6 +72,10 @@ public class CameraAccess {
         }
 
         return camera;
+    }
+
+    public static void configureCamera(Camera camera) {
+
     }
 
     private static boolean checkCameraAvailability(Context context) {
