@@ -1,11 +1,7 @@
 <component name="libraryTable">
   <library name="ComZendekaGlesutilsGlesutils010.aar">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/GLCameraExample/build/exploded-bundles/ComZendekaGlesutilsGlesutils010.aar/classes.jar!/" />
-    </CLASSES>
+    <CLASSES />
     <JAVADOC />
-    <SOURCES>
-      <root url="file://$PROJECT_DIR$/../GLESUtilsProject/GLESUtils/src/main/java" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>

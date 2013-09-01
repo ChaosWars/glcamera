@@ -2,43 +2,46 @@ package com.zendeka.glcamera;
 
 import android.content.Context;
 import android.hardware.Camera;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * Created by Lawrence on 8/28/13.
  */
-public class CameraView extends FrameLayout implements SurfaceHolder.Callback {
+public class CameraView implements SurfaceHolder.Callback {
     private static String TAG = "CameraView";
 
-    private ICameraRenderer mICameraRenderer;
+    private WeakReference<Context> mContext;
+
+    private ICameraRenderer mCameraRenderer;
+    private CameraPreviewCallback mCameraPreviewCallback;
     private CameraPreview mCameraPreview;
 
     private int mCameraId;
     private Camera mCamera;
 
     public CameraView(Context context) {
-        super(context);
+        mContext = new WeakReference<Context>(context);
         init(context);
     }
 
-    public CameraView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context);
+    public ICameraRenderer getCameraRenderer() {
+        return mCameraRenderer;
     }
 
-    public CameraView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init(context);
+    public void setCamaraRenderer(ICameraRenderer cameraRenderer) {
+        mCameraRenderer = cameraRenderer;
     }
 
-    public ICameraRenderer getICameraRenderer() {
-        return mICameraRenderer;
+    public CameraPreviewCallback getCameraPreviewCallback() {
+        return mCameraPreviewCallback;
+    }
+
+    public void setCameraPreviewCallback(CameraPreviewCallback previewCallback) {
+        mCameraPreviewCallback = previewCallback;
     }
 
     public CameraPreview getCameraPreview() {
@@ -47,13 +50,6 @@ public class CameraView extends FrameLayout implements SurfaceHolder.Callback {
 
     public Camera getCamera() {
         return mCamera;
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        mICameraRenderer.layout(l, t, r, b);
-//        mCameraPreview.layout(l, t, r, b);
-        mCameraPreview.layout(0, 0, 1, 1);
     }
 
     @Override
@@ -66,11 +62,9 @@ public class CameraView extends FrameLayout implements SurfaceHolder.Callback {
         Log.d(TAG, "surfaceChanged");
         releaseCamera();
 
-        mCamera = CameraAccess.openCamera(getContext(), mCameraId);
-        CameraPreviewCallback cameraPreviewCallback = mICameraRenderer.getCameraPreviewCallback();
+        mCamera = CameraAccess.openCamera(mContext.get(), mCameraId);
 
-
-        if (mCamera == null || cameraPreviewCallback == null) {
+        if (mCamera == null) {
             return;
         }
 
@@ -83,14 +77,13 @@ public class CameraView extends FrameLayout implements SurfaceHolder.Callback {
         size.width = previewSize.width;
         size.height = previewSize.height;
 
-        mICameraRenderer.getOpenGLSurfaceView().queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                mICameraRenderer.setCameraSize(size);
-            }
-        });
+        if (mCameraRenderer != null) {
+            mCameraRenderer.setCameraSize(size);
+        }
 
-        mCamera.setPreviewCallback(cameraPreviewCallback);
+        if (mCameraPreviewCallback != null) {
+            mCamera.setPreviewCallback(mCameraPreviewCallback);
+        }
 
         try {
             mCamera.setPreviewDisplay(mCameraPreview.getSurfaceHolder());
@@ -106,48 +99,24 @@ public class CameraView extends FrameLayout implements SurfaceHolder.Callback {
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d(TAG, "surfaceDestroyed");
         releaseCamera();
-
-        mICameraRenderer.getOpenGLSurfaceView().queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                releaseCameraRendererResources();
-            }
-        });
     }
 
     public void releaseCamera() {
         if (mCamera != null) {
+            mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
         }
     }
 
-    public void releaseCameraRendererResources() {
-        if (mICameraRenderer != null && mICameraRenderer.getCameraRenderer() != null) {
-            CameraRenderer cameraRenderer = mICameraRenderer.getCameraRenderer();
-
-            cameraRenderer.releaseBuffers();
-            cameraRenderer.releaseShaderProgram();
-        }
-    }
-
     private void init(Context context) {
         mCameraPreview = new CameraPreview(context);
-        addView(mCameraPreview, new FrameLayout.LayoutParams(1, 1));
-//        addView(mCameraPreview, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-//                FrameLayout.LayoutParams.MATCH_PARENT));
-
         SurfaceHolder cameraSurfaceHolder = mCameraPreview.getSurfaceHolder();
 
         if (cameraSurfaceHolder != null) {
             cameraSurfaceHolder.addCallback(this);
         }
-
-        mICameraRenderer = new ICameraRenderer(context);
-        addView(mICameraRenderer,
-                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT));
 
         mCameraId = CameraAccess.getBackFacingCamera(context);
         Log.d(TAG, "init()");

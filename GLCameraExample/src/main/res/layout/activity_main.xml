@@ -2,11 +2,6 @@
     android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
-
-    <com.zendeka.glcamera.CameraView
-        android:id="@+id/cameraView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    android:background="@android:color/black" >
 
 </FrameLayout>

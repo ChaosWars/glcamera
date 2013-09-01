@@ -13,6 +13,7 @@ public class MainActivity extends Activity {
 
     private FrameLayout mMainLayout;
     private CameraView mCameraView;
+    private GLRenderer mGLRenderer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,7 +21,20 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         mMainLayout = (FrameLayout) findViewById(R.id.mainLayout);
-        mCameraView = (CameraView) findViewById(R.id.cameraView);
+
+        mCameraView = new CameraView(this);
+
+        mGLRenderer = new GLRenderer(this);
+        mCameraView.setCamaraRenderer(mGLRenderer);
+
+        mCameraView.setCameraPreviewCallback(mGLRenderer.getCameraPreviewCallback());
+
+        addContentView(mCameraView.getCameraPreview().getSurfaceView(), new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+
+        addContentView(mGLRenderer.getOpenGLSurfaceView(),
+                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT));
 
         Log.d(TAG, "onCreate");
     }
@@ -35,16 +49,20 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        mCameraView.releaseCamera();
-        mCameraView.releaseCameraRendererResources();
         mMainLayout.setKeepScreenOn(false);
-        mCameraView.getICameraRenderer().getOpenGLSurfaceView().onPause();
+        mGLRenderer.getOpenGLSurfaceView().onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         mMainLayout.setKeepScreenOn(true);
-        mCameraView.getICameraRenderer().getOpenGLSurfaceView().onResume();
+        mGLRenderer.getOpenGLSurfaceView().onResume();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mGLRenderer.releaseCameraRendererResources();
     }
 }

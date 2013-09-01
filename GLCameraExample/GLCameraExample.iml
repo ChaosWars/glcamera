@@ -69,8 +69,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Android SDK" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="ComZendekaGlesutilsGlesutils010.aar" level="project" />
     <orderEntry type="module" module-name="GLCamera" exported="" />
-    <orderEntry type="library" exported="" scope="PROVIDED" name="ComZendekaGlesutilsGlesutils010.aar" level="project" />
   </component>
 </module>
 

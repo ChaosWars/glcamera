@@ -10,13 +10,16 @@ import com.zendeka.glesutils.gles20.VertexBufferObject.Target;
 import com.zendeka.glesutils.gles20.VertexBufferObject.Usage;
 import com.zendeka.glesutils.gles20.shader.Shader;
 import com.zendeka.glesutils.gles20.shader.ShaderProgram;
+import com.zendeka.glesutils.utils.GLGetError;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 /**
  * Created by Lawrence on 8/2/13.
@@ -33,14 +36,9 @@ public class CameraRenderer {
         public void postRender();
     }
 
-    private static final String TAG = "CameraRenderer";
-
     private static final String SHADER_TAG = "CameraShaderProgram";
     private static final String FRAGMENT_SHADER_TAG = "CameraFragmentShader";
     private static final String VERTEX_SHADER_TAG = "CameraVertexShader";
-
-    private static final String CAMERA_FRAGMENT_SHADER = "CameraFragmentShader";
-    private static final String CAMERA_VERTEX_SHADER = "CameraVertexShader";
 
     private static final String PROJECTION_MATRIX = "projectionMatrix";
     private static final String VERTEX_COORD = "vertexCoord";
@@ -48,12 +46,17 @@ public class CameraRenderer {
     private static final String Y_TEXTURE_SAMPLER = "yTextureSampler";
     private static final String UV_TEXTURE_SAMPLER = "uvTextureSampler";
 
+    private static final int BYTES_PER_FLOAT = 4;
+    private static final int BYTES_PER_SHORT = 2;
+
     private static final int VERTEX_COORDINATE_SIZE = 3;
     private static final int TEXTURE_COORDINATE_SIZE = 2;
-    private static final int BYTES_PER_FLOAT = 4;
-    private static final int VERTEX_DATA_SIZE = 5;
+    private static final int VERTEX_DATA_SIZE = VERTEX_COORDINATE_SIZE + TEXTURE_COORDINATE_SIZE;
     private static final int VERTEX_DATA_BYTE_SIZE = VERTEX_DATA_SIZE * BYTES_PER_FLOAT;
+    private static final int VERTEX_COORDINATE_BYTE_OFFSET = 0;
     private static final int TEXTURE_COORDINATE_BYTE_OFFSET = VERTEX_COORDINATE_SIZE * BYTES_PER_FLOAT;
+
+    private final String mTag;
 
     private OnRenderCallback mOnRenderCallback;
     private CameraPreviewCallback mCameraPreviewCallback;
@@ -65,16 +68,17 @@ public class CameraRenderer {
 
     private ShaderProgram mShaderProgram;
 
+    public CameraRenderer(Context context, String tag) {
+        mTag = tag;
+        createShaderProgram(context);
+    }
+
     public void setOnRenderCallback(OnRenderCallback onRenderCallback) {
         mOnRenderCallback = onRenderCallback;
     }
 
     public void setCameraPreviewCallback(CameraPreviewCallback cameraPreviewCallback) {
         mCameraPreviewCallback = cameraPreviewCallback;
-    }
-
-    CameraRenderer(Context context) {
-        createShaderProgram(context);
     }
 
     public void render() {
@@ -90,7 +94,7 @@ public class CameraRenderer {
     }
 
     public void createBuffers(Size screenSize, Size cameraSize) {
-        Log.d(TAG, "createBuffers");
+        Log.d(mTag, "Creating buffers");
 
         if (mBuffersCreated) {
             releaseBuffers();
@@ -113,24 +117,29 @@ public class CameraRenderer {
                 s *  cameraSize.height, s *  cameraSize.width, 0.0f, 0.0f, 0.0f
         };
 
-        int[] indices = {0, 1, 2, 3};
+        short[] indices = {0, 1, 2, 3};
 
-        FloatBuffer vertexBuffer = FloatBuffer.wrap(vertices);
-        IntBuffer indexBuffer = IntBuffer.wrap(indices);
+        FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        vertexBuffer.put(vertices).position(0);
+
+        ShortBuffer indexBuffer = ByteBuffer.allocateDirect(indices.length * BYTES_PER_SHORT).order(ByteOrder.nativeOrder()).asShortBuffer();
+        indexBuffer.put(indices).position(0);
 
         mShaderProgram.use();
         mShaderProgram.setUniformMatrix4fv(PROJECTION_MATRIX, 1, false, projection, 0);
 
-        mVbo = new VertexBufferObject(Target.ARRAY_BUFFER, Usage.STATIC_DRAW, vertexBuffer, vertices.length);
-        mIbo = new VertexBufferObject(Target.ELEMENT_ARRAY_BUFFER, Usage.STATIC_DRAW, indexBuffer, indices.length);
+        mVbo = new VertexBufferObject(Target.ARRAY_BUFFER, Usage.STATIC_DRAW, vertexBuffer, vertexBuffer.capacity());
+        mIbo = new VertexBufferObject(Target.ELEMENT_ARRAY_BUFFER, Usage.STATIC_DRAW, indexBuffer, indexBuffer.capacity());
 
         mBuffersCreated = true;
+    }
 
-        Log.d(TAG, "Buffers created");
+    public boolean getBuffersCreated() {
+        return mBuffersCreated;
     }
 
     public void releaseBuffers() {
-        Log.d(TAG, "releaseBuffers");
+        Log.d(mTag, "Releasing buffers");
 
         if (mVbo != null) {
             mVbo.release();
@@ -139,6 +148,7 @@ public class CameraRenderer {
 
         if (mIbo != null) {
             mIbo.release();
+            mIbo = null;
         }
 
         mBuffersCreated = false;
@@ -146,23 +156,22 @@ public class CameraRenderer {
 
     public void releaseShaderProgram() {
         if (mShaderProgram != null) {
+            Log.d(mTag, "Releasing shader program");
             mShaderProgram.release();
             mShaderProgram = null;
         }
     }
 
     private void createShaderProgram(Context context) throws IllegalStateException {
+        Log.d(mTag, "Creating shader program");
+
         String fragmentShaderSrc = readTextFileFromRawResource(context, R.raw.camera_fragment_shader);
         String vertexShaderSrc = readTextFileFromRawResource(context, R.raw.camera_vertex_shader);
 
-        Shader fragmentShader = new Shader(Shader.Type.FRAGMENT, fragmentShaderSrc, CAMERA_FRAGMENT_SHADER);
-        fragmentShader.setTag(FRAGMENT_SHADER_TAG);
+        Shader fragmentShader = new Shader(Shader.Type.FRAGMENT, fragmentShaderSrc, FRAGMENT_SHADER_TAG);
+        Shader vertexShader = new Shader(Shader.Type.VERTEX, vertexShaderSrc, VERTEX_SHADER_TAG);
 
-        Shader vertexShader = new Shader(Shader.Type.VERTEX, vertexShaderSrc, CAMERA_VERTEX_SHADER);
-        vertexShader.setTag(VERTEX_SHADER_TAG);
-
-        mShaderProgram = new ShaderProgram();
-        mShaderProgram.setTag(SHADER_TAG);
+        mShaderProgram = new ShaderProgram(SHADER_TAG);
 
         mShaderProgram.addShader(fragmentShader);
         mShaderProgram.addShader(vertexShader);
@@ -172,17 +181,10 @@ public class CameraRenderer {
         mShaderProgram.removeShader(fragmentShader);
         mShaderProgram.removeShader(vertexShader);
 
-        if (mShaderProgram.isBuilt())
-        {
-            mShaderProgram.use();
-            mShaderProgram.setUniform(Y_TEXTURE_SAMPLER, 0);
-            mShaderProgram.setUniform(UV_TEXTURE_SAMPLER, 1);
-        }
-
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Build log: " + mShaderProgram.getBuildLog());
+            Log.d(mTag, mShaderProgram.getBuildLog());
             mShaderProgram.validate();
-            Log.d(TAG, "Validation log: " + mShaderProgram.getValidationLog());
+            Log.d(mTag, mShaderProgram.getValidationLog());
         }
     }
 
@@ -191,23 +193,38 @@ public class CameraRenderer {
             return;
         }
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mCameraPreviewCallback.getYTexture());
+        if (!mShaderProgram.isBuilt()) {
+            return;
+        }
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mCameraPreviewCallback.getUVTexture());
+        int yTexture = mCameraPreviewCallback.getYTexture();
+        int uvTexture = mCameraPreviewCallback.getUVTexture();
+
+        if (yTexture == 0 || uvTexture == 0) {
+            return;
+        }
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0); GLGetError.getOpenGLErrors(mTag);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yTexture); GLGetError.getOpenGLErrors(mTag);
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1); GLGetError.getOpenGLErrors(mTag);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, uvTexture); GLGetError.getOpenGLErrors(mTag);
 
         mShaderProgram.use();
+
+        mShaderProgram.setUniform(Y_TEXTURE_SAMPLER, yTexture);
+        mShaderProgram.setUniform(UV_TEXTURE_SAMPLER, uvTexture);
+
         mVbo.bind();
 
-        mShaderProgram.enableAttribute(VERTEX_COORD);
-        mShaderProgram.setAttributePointer(VERTEX_COORD, VERTEX_COORDINATE_SIZE, GLES20.GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, 0);
+        mShaderProgram.enableAttribute(VERTEX_COORD); GLGetError.getOpenGLErrors(mTag);
+        mShaderProgram.setAttributePointer(VERTEX_COORD, VERTEX_COORDINATE_SIZE, GLES20.GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, VERTEX_COORDINATE_BYTE_OFFSET); GLGetError.getOpenGLErrors(mTag);
 
-        mShaderProgram.enableAttribute(TEXTURE_COORD);
-        mShaderProgram.setAttributePointer(TEXTURE_COORD, TEXTURE_COORDINATE_SIZE, GLES20.GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, TEXTURE_COORDINATE_BYTE_OFFSET);
+        mShaderProgram.enableAttribute(TEXTURE_COORD); GLGetError.getOpenGLErrors(mTag);
+        mShaderProgram.setAttributePointer(TEXTURE_COORD, TEXTURE_COORDINATE_SIZE, GLES20.GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, TEXTURE_COORDINATE_BYTE_OFFSET); GLGetError.getOpenGLErrors(mTag);
 
         mIbo.bind();
-        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, mIbo.getSize(), GLES20.GL_UNSIGNED_SHORT, 0);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, mIbo.getSize(), GLES20.GL_UNSIGNED_SHORT, 0); GLGetError.getOpenGLErrors(mTag);
 
         mShaderProgram.disableAttribute(VERTEX_COORD);
         mShaderProgram.disableAttribute(TEXTURE_COORD);
