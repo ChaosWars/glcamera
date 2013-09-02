@@ -78,7 +78,7 @@ public class GLRenderer implements Renderer, ICameraRenderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        GLES20.glClearColor(1.0f, 0.0f, 0.0f, 1.0f); GLGetError.getOpenGLErrors(TAG);
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f); GLGetError.getOpenGLErrors(TAG);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT); GLGetError.getOpenGLErrors(TAG);
 
         mCameraRenderer.render();

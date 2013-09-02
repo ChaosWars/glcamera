@@ -46,8 +46,8 @@ public class CameraRenderer {
     private static final String Y_TEXTURE_SAMPLER = "yTextureSampler";
     private static final String UV_TEXTURE_SAMPLER = "uvTextureSampler";
 
-    private static final int BYTES_PER_FLOAT = 4;
-    private static final int BYTES_PER_SHORT = 2;
+    private static final int BYTES_PER_FLOAT = Float.SIZE / 8;
+    private static final int BYTES_PER_SHORT = Short.SIZE / 8;
 
     private static final int VERTEX_COORDINATE_SIZE = 3;
     private static final int TEXTURE_COORDINATE_SIZE = 2;
@@ -128,8 +128,8 @@ public class CameraRenderer {
         mShaderProgram.use();
         mShaderProgram.setUniformMatrix4fv(PROJECTION_MATRIX, 1, false, projection, 0);
 
-        mVbo = new VertexBufferObject(Target.ARRAY_BUFFER, Usage.STATIC_DRAW, vertexBuffer, vertexBuffer.capacity());
-        mIbo = new VertexBufferObject(Target.ELEMENT_ARRAY_BUFFER, Usage.STATIC_DRAW, indexBuffer, indexBuffer.capacity());
+        mVbo = new VertexBufferObject(Target.ARRAY_BUFFER, Usage.STATIC_DRAW, vertexBuffer, vertices.length, vertexBuffer.capacity() * BYTES_PER_FLOAT);
+        mIbo = new VertexBufferObject(Target.ELEMENT_ARRAY_BUFFER, Usage.STATIC_DRAW, indexBuffer, indices.length, indexBuffer.capacity() * BYTES_PER_SHORT);
 
         mBuffersCreated = true;
     }
@@ -224,10 +224,20 @@ public class CameraRenderer {
         mShaderProgram.setAttributePointer(TEXTURE_COORD, TEXTURE_COORDINATE_SIZE, GLES20.GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, TEXTURE_COORDINATE_BYTE_OFFSET); GLGetError.getOpenGLErrors(mTag);
 
         mIbo.bind();
-        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, mIbo.getSize(), GLES20.GL_UNSIGNED_SHORT, 0); GLGetError.getOpenGLErrors(mTag);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, mIbo.getNumElements(), GLES20.GL_UNSIGNED_SHORT, 0); GLGetError.getOpenGLErrors(mTag);
 
-        mShaderProgram.disableAttribute(VERTEX_COORD);
-        mShaderProgram.disableAttribute(TEXTURE_COORD);
+        mShaderProgram.disableAttribute(VERTEX_COORD); GLGetError.getOpenGLErrors(mTag);
+        mShaderProgram.disableAttribute(TEXTURE_COORD); GLGetError.getOpenGLErrors(mTag);
+
+        //Unbind the texture bound to GL_TEXTURE1
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0); GLGetError.getOpenGLErrors(mTag);
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0); GLGetError.getOpenGLErrors(mTag);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0); GLGetError.getOpenGLErrors(mTag);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0); GLGetError.getOpenGLErrors(mTag);
+        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0); GLGetError.getOpenGLErrors(mTag);
+
     }
 
     private static String readTextFileFromRawResource(final Context context, final int resourceId)
