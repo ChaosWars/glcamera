@@ -40,16 +40,12 @@ public class CameraPreviewCallback implements Camera.PreviewCallback {
 
         final int yDataLength = mWidth * mHeight;
         final int uvDataLength = data.length - yDataLength;
-        final byte[] yData = new byte[yDataLength];
-        final byte[] uvData = new byte[uvDataLength];
 
-        System.arraycopy(data, 0, yData, 0, yDataLength);
         final ByteBuffer yPixels = ByteBuffer.allocate(yDataLength);
-        yPixels.put(yData).position(0);
+        yPixels.put(data, 0, yDataLength).position(0);
 
-        System.arraycopy(data, yDataLength, uvData, 0, uvDataLength);
         final ByteBuffer uvPixels = ByteBuffer.allocate(uvDataLength);
-        uvPixels.put(uvData).position(0);
+        uvPixels.put(data, yDataLength, uvDataLength).position(0);
 
         if (!mTexturesCreated) {
             Log.d(mTag, "Size: " + mWidth + "x" + mHeight);
