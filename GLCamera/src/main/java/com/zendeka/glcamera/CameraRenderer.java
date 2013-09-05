@@ -1,7 +1,7 @@
 package com.zendeka.glcamera;
 
 import android.content.Context;
-import android.opengl.GLES20;
+import static android.opengl.GLES20.*;
 import android.opengl.Matrix;
 import android.util.Log;
 
@@ -204,11 +204,11 @@ public class CameraRenderer {
             return;
         }
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0); GLGetError.getOpenGLErrors(mTag);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yTexture); GLGetError.getOpenGLErrors(mTag);
+        glActiveTexture(GL_TEXTURE0); GLGetError.getOpenGLErrors(mTag);
+        glBindTexture(GL_TEXTURE_2D, yTexture); GLGetError.getOpenGLErrors(mTag);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1); GLGetError.getOpenGLErrors(mTag);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, uvTexture); GLGetError.getOpenGLErrors(mTag);
+        glActiveTexture(GL_TEXTURE1); GLGetError.getOpenGLErrors(mTag);
+        glBindTexture(GL_TEXTURE_2D, uvTexture); GLGetError.getOpenGLErrors(mTag);
 
         mShaderProgram.use();
 
@@ -218,25 +218,25 @@ public class CameraRenderer {
         mVbo.bind();
 
         mShaderProgram.enableAttribute(VERTEX_COORD); GLGetError.getOpenGLErrors(mTag);
-        mShaderProgram.setAttributePointer(VERTEX_COORD, VERTEX_COORDINATE_SIZE, GLES20.GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, VERTEX_COORDINATE_BYTE_OFFSET); GLGetError.getOpenGLErrors(mTag);
+        mShaderProgram.setAttributePointer(VERTEX_COORD, VERTEX_COORDINATE_SIZE, GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, VERTEX_COORDINATE_BYTE_OFFSET); GLGetError.getOpenGLErrors(mTag);
 
         mShaderProgram.enableAttribute(TEXTURE_COORD); GLGetError.getOpenGLErrors(mTag);
-        mShaderProgram.setAttributePointer(TEXTURE_COORD, TEXTURE_COORDINATE_SIZE, GLES20.GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, TEXTURE_COORDINATE_BYTE_OFFSET); GLGetError.getOpenGLErrors(mTag);
+        mShaderProgram.setAttributePointer(TEXTURE_COORD, TEXTURE_COORDINATE_SIZE, GL_FLOAT, false, VERTEX_DATA_BYTE_SIZE, TEXTURE_COORDINATE_BYTE_OFFSET); GLGetError.getOpenGLErrors(mTag);
 
         mIbo.bind();
-        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, mIbo.getNumElements(), GLES20.GL_UNSIGNED_SHORT, 0); GLGetError.getOpenGLErrors(mTag);
+        glDrawElements(GL_TRIANGLE_STRIP, mIbo.getNumElements(), GL_UNSIGNED_SHORT, 0); GLGetError.getOpenGLErrors(mTag);
 
         mShaderProgram.disableAttribute(VERTEX_COORD); GLGetError.getOpenGLErrors(mTag);
         mShaderProgram.disableAttribute(TEXTURE_COORD); GLGetError.getOpenGLErrors(mTag);
 
         //Unbind the texture bound to GL_TEXTURE1
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0); GLGetError.getOpenGLErrors(mTag);
+        glBindTexture(GL_TEXTURE_2D, 0); GLGetError.getOpenGLErrors(mTag);
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0); GLGetError.getOpenGLErrors(mTag);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0); GLGetError.getOpenGLErrors(mTag);
+        glActiveTexture(GL_TEXTURE0); GLGetError.getOpenGLErrors(mTag);
+        glBindTexture(GL_TEXTURE_2D, 0); GLGetError.getOpenGLErrors(mTag);
 
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0); GLGetError.getOpenGLErrors(mTag);
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0); GLGetError.getOpenGLErrors(mTag);
+        glBindBuffer(GL_ARRAY_BUFFER, 0); GLGetError.getOpenGLErrors(mTag);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GLGetError.getOpenGLErrors(mTag);
 
     }
 

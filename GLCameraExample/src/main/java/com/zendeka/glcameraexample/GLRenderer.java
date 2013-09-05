@@ -1,7 +1,6 @@
 package com.zendeka.glcameraexample;
 
 import android.content.Context;
-import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
@@ -14,6 +13,8 @@ import com.zendeka.glesutils.utils.GLGetError;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import static android.opengl.GLES20.*;
 
 /**
  * Created by Lawrence on 8/2/13.
@@ -67,7 +68,7 @@ public class GLRenderer implements Renderer, ICameraRenderer {
         mScreenSize.width = width;
         mScreenSize.height = height;
 
-        GLES20.glViewport(0, 0, mScreenSize.width, mScreenSize.height); GLGetError.getOpenGLErrors(TAG);
+        glViewport(0, 0, mScreenSize.width, mScreenSize.height); GLGetError.getOpenGLErrors(TAG);
 
         if (mScreenSize.width > 0 && mScreenSize.height > 0
                 && mCameraSize.width > 0 && mCameraSize.height > 0
@@ -78,8 +79,8 @@ public class GLRenderer implements Renderer, ICameraRenderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f); GLGetError.getOpenGLErrors(TAG);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT); GLGetError.getOpenGLErrors(TAG);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f); GLGetError.getOpenGLErrors(TAG);
+        glClear(GL_COLOR_BUFFER_BIT); GLGetError.getOpenGLErrors(TAG);
 
         mCameraRenderer.render();
     }

@@ -12,8 +12,8 @@ void main(void)
 
     // Use BT.709 HDTV standard
     mediump vec3 rgb = mat3(1.0,      1.0,     1.0,
-                         0.0,     -0.18732, 1.8556,
-                         1.57481, -0.46813, 0.0) * yuv;
+                            0.0,     -0.18732, 1.8556,
+                            1.57481, -0.46813, 0.0) * yuv;
 
     gl_FragColor = vec4(rgb, 1.0);
 }
