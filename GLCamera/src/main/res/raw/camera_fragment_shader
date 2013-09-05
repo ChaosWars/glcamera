@@ -5,13 +5,13 @@ uniform sampler2D uvTextureSampler;
 
 void main(void)
 {
-    lowp vec3 yuv;
+    mediump vec3 yuv;
 
     yuv.x = texture2D(yTextureSampler, texCoord).r;
     yuv.zy = texture2D(uvTextureSampler, texCoord).ra - vec2(0.5, 0.5);
 
     // Use BT.709 HDTV standard
-    lowp vec3 rgb = mat3(1.0,      1.0,     1.0,
+    mediump vec3 rgb = mat3(1.0,      1.0,     1.0,
                          0.0,     -0.18732, 1.8556,
                          1.57481, -0.46813, 0.0) * yuv;
 

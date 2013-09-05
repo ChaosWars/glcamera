@@ -68,9 +68,8 @@ public class CameraView implements SurfaceHolder.Callback {
             return;
         }
 
-        CameraAccess.configureCamera(mCamera);
-
-        Camera.Parameters params = mCamera.getParameters();
+        Camera.Parameters params = CameraAccess.configureCamera(mCamera);
+        mCamera.setParameters(params);
         Camera.Size previewSize = params.getPreviewSize();
 
         final CameraRenderer.Size size = new CameraRenderer.Size();

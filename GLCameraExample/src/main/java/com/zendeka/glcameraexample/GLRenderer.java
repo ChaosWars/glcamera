@@ -7,9 +7,9 @@ import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
 
 import com.zendeka.glcamera.CameraPreviewCallback;
+import com.zendeka.glcamera.CameraRenderer;
 import com.zendeka.glcamera.CameraRenderer.Size;
 import com.zendeka.glcamera.ICameraRenderer;
-
 import com.zendeka.glesutils.utils.GLGetError;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -56,7 +56,7 @@ public class GLRenderer implements Renderer, ICameraRenderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.d(TAG, "onSurfaceCreated");
 
-        mCameraRenderer = new com.zendeka.glcamera.CameraRenderer(mGLSurfaceView.getContext(), "CameraRenderer");
+        mCameraRenderer = new CameraRenderer(mGLSurfaceView.getContext(), "CameraRenderer");
         mCameraRenderer.setCameraPreviewCallback(mCameraPreviewCallback);
     }
 
@@ -92,11 +92,13 @@ public class GLRenderer implements Renderer, ICameraRenderer {
 
         if (mScreenSize.width > 0 && mScreenSize.height > 0
                 && mCameraSize.width > 0 && mCameraSize.height > 0
-                && !mCameraRenderer.getBuffersCreated()) {
+                && mCameraRenderer != null && !mCameraRenderer.getBuffersCreated()) {
             mGLSurfaceView.queueEvent(new Runnable() {
                 @Override
                 public void run() {
-                    mCameraRenderer.createBuffers(mScreenSize, mCameraSize);
+                    if (mCameraRenderer != null) {
+                        mCameraRenderer.createBuffers(mScreenSize, mCameraSize);
+                    }
                 }
             });
         }
@@ -106,9 +108,14 @@ public class GLRenderer implements Renderer, ICameraRenderer {
         mGLSurfaceView.queueEvent(new Runnable() {
             @Override
             public void run() {
-                mCameraRenderer.releaseBuffers();
-                mCameraRenderer.releaseShaderProgram();
-                mCameraPreviewCallback.releaseTextures();
+                if (mCameraRenderer != null) {
+                    mCameraRenderer.releaseBuffers();
+                    mCameraRenderer.releaseShaderProgram();
+                }
+
+                if (mCameraPreviewCallback != null) {
+                    mCameraPreviewCallback.releaseTextures();
+                }
             }
         });
     }

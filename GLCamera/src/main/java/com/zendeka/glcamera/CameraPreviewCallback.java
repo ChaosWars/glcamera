@@ -40,8 +40,16 @@ public class CameraPreviewCallback implements Camera.PreviewCallback {
 
         final int yDataLength = mWidth * mHeight;
         final int uvDataLength = data.length - yDataLength;
-        final ByteBuffer yPixels = ByteBuffer.wrap(data, 0, yDataLength);
-        final ByteBuffer uvPixels = ByteBuffer.wrap(data, yDataLength, uvDataLength);
+        final byte[] yData = new byte[yDataLength];
+        final byte[] uvData = new byte[uvDataLength];
+
+        System.arraycopy(data, 0, yData, 0, yDataLength);
+        final ByteBuffer yPixels = ByteBuffer.allocate(yDataLength);
+        yPixels.put(yData).position(0);
+
+        System.arraycopy(data, yDataLength, uvData, 0, uvDataLength);
+        final ByteBuffer uvPixels = ByteBuffer.allocate(uvDataLength);
+        uvPixels.put(uvData).position(0);
 
         if (!mTexturesCreated) {
             Log.d(mTag, "Size: " + mWidth + "x" + mHeight);
@@ -52,17 +60,49 @@ public class CameraPreviewCallback implements Camera.PreviewCallback {
             mGLSurfaceView.queueEvent(new Runnable() {
                 @Override
                 public void run() {
+                    //Set up Y texture
+                    GLES20.glActiveTexture(GLES20.GL_TEXTURE0); GLGetError.getOpenGLErrors(mTag);
+
                     IntBuffer yTextureBuffer = IntBuffer.allocate(1);
+
                     GLES20.glGenTextures(1, yTextureBuffer); GLGetError.getOpenGLErrors(mTag);
+
                     mYTexture = yTextureBuffer.get(0);
+
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mYTexture); GLGetError.getOpenGLErrors(mTag);
+
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR); GLGetError.getOpenGLErrors(mTag);
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR); GLGetError.getOpenGLErrors(mTag);
+
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE); GLGetError.getOpenGLErrors(mTag);
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE); GLGetError.getOpenGLErrors(mTag);
+
                     GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE, mWidth, mHeight, 0, GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, null); GLGetError.getOpenGLErrors(mTag);
 
+                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0); GLGetError.getOpenGLErrors(mTag);
+
+                    //Set up UV texture
+                    GLES20.glActiveTexture(GLES20.GL_TEXTURE1); GLGetError.getOpenGLErrors(mTag);
+
                     IntBuffer uvTextureBuffer = IntBuffer.allocate(1);
+
                     GLES20.glGenTextures(1, uvTextureBuffer); GLGetError.getOpenGLErrors(mTag);
+
                     mUVTexture = uvTextureBuffer.get(0);
+
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mUVTexture); GLGetError.getOpenGLErrors(mTag);
-                    GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE_ALPHA, mWidth, mHeight / 2, 0, GLES20.GL_LUMINANCE_ALPHA, GLES20.GL_UNSIGNED_BYTE, null); GLGetError.getOpenGLErrors(mTag);
+
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR); GLGetError.getOpenGLErrors(mTag);
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR); GLGetError.getOpenGLErrors(mTag);
+
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE); GLGetError.getOpenGLErrors(mTag);
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE); GLGetError.getOpenGLErrors(mTag);
+
+                    GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE_ALPHA, mWidth / 2, mHeight / 2, 0, GLES20.GL_LUMINANCE_ALPHA, GLES20.GL_UNSIGNED_BYTE, null); GLGetError.getOpenGLErrors(mTag);
+
+                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0); GLGetError.getOpenGLErrors(mTag);
+
+                    GLES20.glActiveTexture(GLES20.GL_TEXTURE1); GLGetError.getOpenGLErrors(mTag);
                 }
             });
 
@@ -80,7 +120,9 @@ public class CameraPreviewCallback implements Camera.PreviewCallback {
                 //Upload UV data
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE1); GLGetError.getOpenGLErrors(mTag);
                 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mUVTexture); GLGetError.getOpenGLErrors(mTag);
-                GLES20.glTexSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, mWidth, mHeight / 2, GLES20.GL_LUMINANCE_ALPHA, GLES20.GL_UNSIGNED_BYTE, uvPixels); GLGetError.getOpenGLErrors(mTag);
+                GLES20.glTexSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, mWidth / 2, mHeight / 2, GLES20.GL_LUMINANCE_ALPHA, GLES20.GL_UNSIGNED_BYTE, uvPixels); GLGetError.getOpenGLErrors(mTag);
+
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0); GLGetError.getOpenGLErrors(mTag);
             }
         });
     }

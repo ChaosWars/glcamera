@@ -2,6 +2,7 @@ package com.zendeka.glcamera;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.util.Log;
@@ -74,8 +75,10 @@ public class CameraAccess {
         return camera;
     }
 
-    public static void configureCamera(Camera camera) {
-
+    public static Camera.Parameters configureCamera(Camera camera) {
+        Camera.Parameters params = camera.getParameters();
+        params.setPreviewFormat(ImageFormat.NV21);
+        return params;
     }
 
     private static boolean checkCameraAvailability(Context context) {
