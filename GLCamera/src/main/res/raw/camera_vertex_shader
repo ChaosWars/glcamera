@@ -1,9 +1,9 @@
 uniform highp mat4 projectionMatrix;
 
 attribute highp vec3 vertexCoord;
-attribute mediump vec2 textureCoord;
+attribute highp vec2 textureCoord;
 
-varying mediump vec2 texCoord;
+varying highp vec2 texCoord;
 
 void main(void)
 {

@@ -1,14 +1,34 @@
 package com.zendeka.glcamera;
 
 import android.hardware.Camera;
-import static android.opengl.GLES20.*;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import com.zendeka.glesutils.utils.GLGetError;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+
+import static android.opengl.GLES20.GL_CLAMP_TO_EDGE;
+import static android.opengl.GLES20.GL_LUMINANCE;
+import static android.opengl.GLES20.GL_LUMINANCE_ALPHA;
+import static android.opengl.GLES20.GL_NEAREST;
+import static android.opengl.GLES20.GL_TEXTURE0;
+import static android.opengl.GLES20.GL_TEXTURE1;
+import static android.opengl.GLES20.GL_TEXTURE_2D;
+import static android.opengl.GLES20.GL_TEXTURE_MAG_FILTER;
+import static android.opengl.GLES20.GL_TEXTURE_MIN_FILTER;
+import static android.opengl.GLES20.GL_TEXTURE_WRAP_S;
+import static android.opengl.GLES20.GL_TEXTURE_WRAP_T;
+import static android.opengl.GLES20.GL_UNSIGNED_BYTE;
+import static android.opengl.GLES20.glActiveTexture;
+import static android.opengl.GLES20.glBindTexture;
+import static android.opengl.GLES20.glDeleteTextures;
+import static android.opengl.GLES20.glGenTextures;
+import static android.opengl.GLES20.glTexImage2D;
+import static android.opengl.GLES20.glTexParameteri;
+import static android.opengl.GLES20.glTexSubImage2D;
 
 /**
  * Created by Lawrence on 8/2/13.
@@ -41,10 +61,12 @@ public class CameraPreviewCallback implements Camera.PreviewCallback {
         final int yDataLength = mWidth * mHeight;
         final int uvDataLength = data.length - yDataLength;
 
-        final ByteBuffer yPixels = ByteBuffer.allocate(yDataLength);
+//        final ByteBuffer yPixels = ByteBuffer.allocate(yDataLength);
+        final ByteBuffer yPixels = ByteBuffer.allocateDirect(yDataLength).order(ByteOrder.nativeOrder());
         yPixels.put(data, 0, yDataLength).position(0);
 
-        final ByteBuffer uvPixels = ByteBuffer.allocate(uvDataLength);
+//        final ByteBuffer uvPixels = ByteBuffer.allocate(uvDataLength);
+        final ByteBuffer uvPixels = ByteBuffer.allocateDirect(uvDataLength).order(ByteOrder.nativeOrder());
         uvPixels.put(data, yDataLength, uvDataLength).position(0);
 
         if (!mTexturesCreated) {
