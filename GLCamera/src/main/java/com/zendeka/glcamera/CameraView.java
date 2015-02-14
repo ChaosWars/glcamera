@@ -17,7 +17,7 @@ public class CameraView implements SurfaceHolder.Callback {
     private WeakReference<Context> mContext;
 
     private ICameraRenderer mCameraRenderer;
-    private CameraPreviewCallback mCameraPreviewCallback;
+    private Camera.PreviewCallback mCameraPreviewCallback;
     private CameraPreview mCameraPreview;
 
     private int mCameraId;
@@ -36,11 +36,11 @@ public class CameraView implements SurfaceHolder.Callback {
         mCameraRenderer = cameraRenderer;
     }
 
-    public CameraPreviewCallback getCameraPreviewCallback() {
+    public Camera.PreviewCallback getCameraPreviewCallback() {
         return mCameraPreviewCallback;
     }
 
-    public void setCameraPreviewCallback(CameraPreviewCallback previewCallback) {
+    public void setCameraPreviewCallback(Camera.PreviewCallback previewCallback) {
         mCameraPreviewCallback = previewCallback;
     }
 

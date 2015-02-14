@@ -1,3 +1,6 @@
 GLCamera/build/
 .idea/workspace.xml
 GLCameraExample/build/
+local.properties
+.gradle/
+build/

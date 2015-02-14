@@ -1,0 +1,12 @@
+uniform highp mat4 projectionMatrix;
+
+attribute highp vec3 vertexCoord;
+attribute highp vec2 textureCoord;
+
+varying highp vec2 texCoord;
+
+void main(void)
+{
+    texCoord = textureCoord;
+    gl_Position = projectionMatrix * vec4(vertexCoord, 1.0);
+}

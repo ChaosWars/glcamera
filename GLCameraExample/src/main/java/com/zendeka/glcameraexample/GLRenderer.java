@@ -1,6 +1,7 @@
 package com.zendeka.glcameraexample;
 
 import android.content.Context;
+import android.hardware.Camera;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
@@ -8,13 +9,17 @@ import android.util.Log;
 import com.zendeka.glcamera.CameraPreviewCallback;
 import com.zendeka.glcamera.CameraRenderer;
 import com.zendeka.glcamera.CameraRenderer.Size;
+import com.zendeka.glcamera.EGLContextFactory;
 import com.zendeka.glcamera.ICameraRenderer;
 import com.zendeka.glesutils.utils.GLGetError;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES20.glClear;
+import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glViewport;
 
 /**
  * Created by Lawrence on 8/2/13.
@@ -22,42 +27,52 @@ import static android.opengl.GLES20.*;
 public class GLRenderer implements Renderer, ICameraRenderer {
     private static final String TAG = "GLRenderer";
 
+    private final EGLContextFactory mEGLContextFactory;
+
     private GLSurfaceView mGLSurfaceView;
-    private com.zendeka.glcamera.CameraRenderer mCameraRenderer;
+    private CameraRenderer mCameraRenderer;
     private CameraPreviewCallback mCameraPreviewCallback;
 
     private Size mCameraSize = new Size();
     private Size mScreenSize = new Size();
 
-    public GLRenderer(Context context) {
+    public GLRenderer(Context context, EGLContextFactory eglContextFactory) {
+        mEGLContextFactory = eglContextFactory;
+
         mGLSurfaceView = new GLSurfaceView(context);
         mGLSurfaceView.setZOrderMediaOverlay(true);
 
         mGLSurfaceView.setEGLContextClientVersion(2);
         mGLSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 
-        mGLSurfaceView.setRenderer(this);
+        mGLSurfaceView.setEGLContextFactory(mEGLContextFactory);
 
-        mCameraPreviewCallback = new CameraPreviewCallback("CameraPreviewCallback", mGLSurfaceView);
+        mGLSurfaceView.setRenderer(this);
     }
 
     public GLSurfaceView getOpenGLSurfaceView() {
         return mGLSurfaceView;
     }
 
-    public com.zendeka.glcamera.CameraRenderer getCameraRenderer() {
+    public CameraRenderer getCameraRenderer() {
         return mCameraRenderer;
     }
 
-    public CameraPreviewCallback getCameraPreviewCallback() {
+    public void setCameraRenderer(CameraRenderer cameraRenderer) {
+        mCameraRenderer = cameraRenderer;
+    }
+
+    public Camera.PreviewCallback getCameraPreviewCallback() {
         return mCameraPreviewCallback;
+    }
+
+    public void setCameraPreviewCallback(CameraPreviewCallback cameraPreviewCallback) {
+        mCameraPreviewCallback = cameraPreviewCallback;
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.d(TAG, "onSurfaceCreated");
-
-        mCameraRenderer = new CameraRenderer(mGLSurfaceView.getContext(), "CameraRenderer");
         mCameraRenderer.setCameraPreviewCallback(mCameraPreviewCallback);
     }
 

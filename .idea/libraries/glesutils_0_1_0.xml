@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="glesutils-0.1.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/GLCamera/build/intermediates/exploded-aar/com.zendeka/glesutils/0.1.0/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/GLCamera/build/intermediates/exploded-aar/com.zendeka/glesutils/0.1.0/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

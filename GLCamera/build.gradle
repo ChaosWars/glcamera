@@ -1,13 +1,14 @@
 buildscript {
     repositories {
         mavenCentral()
+        mavenLocal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
+        classpath 'com.android.tools.build:gradle:1.0.1'
     }
 }
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 version '0.1.0'
 group 'com.zendeka.glcamera'
 
@@ -17,16 +18,16 @@ repositories {
 }
 
 dependencies {
-    compile 'com.zendeka.glesutils:glesutils:0.1.0'
+    compile 'com.zendeka:glesutils:0.1.0'
 }
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.0.0"
+    compileSdkVersion 21
+    buildToolsVersion '21.1.2'
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 18
+        targetSdkVersion 19
     }
 }
 
