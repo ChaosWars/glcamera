@@ -9,6 +9,7 @@ import android.widget.FrameLayout;
 import com.zendeka.glcamera.CameraView;
 import com.zendeka.glcamera.EGLContextFactory;
 import com.zendeka.glcamera.NV21CameraPreviewCallback;
+import com.zendeka.glcamera.NV21CameraRenderer;
 
 import javax.microedition.khronos.egl.EGL10;
 
@@ -41,6 +42,9 @@ public class MainActivity extends Activity {
         cameraPreviewCallback.setGLSurfaceView(mGLRenderer.getOpenGLSurfaceView());
 
         mGLRenderer.setCameraPreviewCallback(cameraPreviewCallback);
+
+        NV21CameraRenderer cameraRenderer = new NV21CameraRenderer("NV21CameraRenderer");
+        mGLRenderer.setCameraRenderer(cameraRenderer);
 
         mCameraView = new CameraView(this);
         mCameraView.setCamaraRenderer(mGLRenderer);

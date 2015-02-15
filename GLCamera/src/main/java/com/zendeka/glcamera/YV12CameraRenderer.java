@@ -62,12 +62,12 @@ public class YV12CameraRenderer implements CameraRenderer<YV12CameraPreviewCallb
     private VertexBufferObject mIbo;
 
     private boolean mBuffersCreated;
+    private boolean mShaderProgramCreated;
 
     private ShaderProgram mShaderProgram;
 
-    public YV12CameraRenderer(Context context, String tag) {
+    public YV12CameraRenderer(String tag) {
         mTag = tag;
-        createShaderProgram(context);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class YV12CameraRenderer implements CameraRenderer<YV12CameraPreviewCallb
     }
 
     @Override
-    public boolean getBuffersCreated() {
+    public boolean isBuffersCreated() {
         return mBuffersCreated;
     }
 
@@ -166,7 +166,8 @@ public class YV12CameraRenderer implements CameraRenderer<YV12CameraPreviewCallb
         }
     }
 
-    private void createShaderProgram(Context context) throws IllegalStateException {
+    @Override
+    public void createShaderProgram(Context context) throws IllegalStateException {
         Log.d(mTag, "Creating shader program");
 
         String fragmentShaderSrc = TextUtils.readTextFileFromRawResource(context, R.raw.camera_yv12_fragment_shader);
@@ -181,6 +182,7 @@ public class YV12CameraRenderer implements CameraRenderer<YV12CameraPreviewCallb
         mShaderProgram.addShader(vertexShader);
 
         mShaderProgram.build();
+        mShaderProgramCreated = true;
 
         mShaderProgram.removeShader(fragmentShader);
         mShaderProgram.removeShader(vertexShader);
@@ -190,6 +192,11 @@ public class YV12CameraRenderer implements CameraRenderer<YV12CameraPreviewCallb
             mShaderProgram.validate();
             Log.d(mTag, mShaderProgram.getValidationLog());
         }
+    }
+
+    @Override
+    public boolean isShaderProgramCreated() {
+        return mShaderProgramCreated;
     }
 
     private void renderHelper() {

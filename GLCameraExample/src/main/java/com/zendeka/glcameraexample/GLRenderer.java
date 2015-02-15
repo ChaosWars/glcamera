@@ -11,7 +11,10 @@ import com.zendeka.glcamera.CameraRenderer;
 import com.zendeka.glcamera.CameraRenderer.Size;
 import com.zendeka.glcamera.EGLContextFactory;
 import com.zendeka.glcamera.ICameraRenderer;
+import com.zendeka.glcamera.NV21CameraRenderer;
 import com.zendeka.glesutils.utils.GLGetError;
+
+import java.lang.ref.WeakReference;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -27,6 +30,7 @@ import static android.opengl.GLES20.glViewport;
 public class GLRenderer implements Renderer, ICameraRenderer {
     private static final String TAG = "GLRenderer";
 
+    private final WeakReference<Context> mContext;
     private final EGLContextFactory mEGLContextFactory;
 
     private GLSurfaceView mGLSurfaceView;
@@ -37,9 +41,10 @@ public class GLRenderer implements Renderer, ICameraRenderer {
     private Size mScreenSize = new Size();
 
     public GLRenderer(Context context, EGLContextFactory eglContextFactory) {
+        mContext = new WeakReference<>(context);
         mEGLContextFactory = eglContextFactory;
 
-        mGLSurfaceView = new GLSurfaceView(context);
+        mGLSurfaceView = new GLSurfaceView(mContext.get());
         mGLSurfaceView.setZOrderMediaOverlay(true);
 
         mGLSurfaceView.setEGLContextClientVersion(2);
@@ -73,6 +78,11 @@ public class GLRenderer implements Renderer, ICameraRenderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.d(TAG, "onSurfaceCreated");
+
+        if (!mCameraRenderer.isShaderProgramCreated()) {
+            mCameraRenderer.createShaderProgram(mContext.get());
+        }
+
         mCameraRenderer.setCameraPreviewCallback(mCameraPreviewCallback);
     }
 
@@ -87,7 +97,7 @@ public class GLRenderer implements Renderer, ICameraRenderer {
 
         if (mScreenSize.width > 0 && mScreenSize.height > 0
                 && mCameraSize.width > 0 && mCameraSize.height > 0
-                && !mCameraRenderer.getBuffersCreated()) {
+                && !mCameraRenderer.isBuffersCreated()) {
             mCameraRenderer.createBuffers(mScreenSize, mCameraSize);
         }
     }
@@ -108,7 +118,7 @@ public class GLRenderer implements Renderer, ICameraRenderer {
 
         if (mScreenSize.width > 0 && mScreenSize.height > 0
                 && mCameraSize.width > 0 && mCameraSize.height > 0
-                && mCameraRenderer != null && !mCameraRenderer.getBuffersCreated()) {
+                && mCameraRenderer != null && !mCameraRenderer.isBuffersCreated()) {
             mGLSurfaceView.queueEvent(new Runnable() {
                 @Override
                 public void run() {

@@ -60,12 +60,12 @@ public class NV21CameraRenderer implements CameraRenderer<NV21CameraPreviewCallb
     private VertexBufferObject mIbo;
 
     private boolean mBuffersCreated;
+    private boolean mShaderProgramCreated;
 
     private ShaderProgram mShaderProgram;
 
-    public NV21CameraRenderer(Context context, String tag) {
+    public NV21CameraRenderer(String tag) {
         mTag = tag;
-        createShaderProgram(context);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class NV21CameraRenderer implements CameraRenderer<NV21CameraPreviewCallb
     }
 
     @Override
-    public boolean getBuffersCreated() {
+    public boolean isBuffersCreated() {
         return mBuffersCreated;
     }
 
@@ -164,7 +164,8 @@ public class NV21CameraRenderer implements CameraRenderer<NV21CameraPreviewCallb
         }
     }
 
-    private void createShaderProgram(Context context) throws IllegalStateException {
+    @Override
+    public void createShaderProgram(Context context) throws IllegalStateException {
         Log.d(mTag, "Creating shader program");
 
         String fragmentShaderSrc = TextUtils.readTextFileFromRawResource(context, R.raw.camera_nv21_fragment_shader);
@@ -179,6 +180,7 @@ public class NV21CameraRenderer implements CameraRenderer<NV21CameraPreviewCallb
         mShaderProgram.addShader(vertexShader);
 
         mShaderProgram.build();
+        mShaderProgramCreated = true;
 
         mShaderProgram.removeShader(fragmentShader);
         mShaderProgram.removeShader(vertexShader);
@@ -188,6 +190,11 @@ public class NV21CameraRenderer implements CameraRenderer<NV21CameraPreviewCallb
             mShaderProgram.validate();
             Log.d(mTag, mShaderProgram.getValidationLog());
         }
+    }
+
+    @Override
+    public boolean isShaderProgramCreated() {
+        return mShaderProgramCreated;
     }
 
     private void renderHelper() {

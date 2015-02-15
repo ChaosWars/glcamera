@@ -5,6 +5,8 @@
       <root url="file://$PROJECT_DIR$/GLCamera/build/intermediates/exploded-aar/com.zendeka/glesutils/0.1.0/res" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../GLESUtilsProject/GLESUtils/src/main/java" />
+    </SOURCES>
   </library>
 </component>
