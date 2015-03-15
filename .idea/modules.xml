@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/GLCamera/GLCamera.iml" filepath="$PROJECT_DIR$/GLCamera/GLCamera.iml" />
       <module fileurl="file://$PROJECT_DIR$/GLCameraExample/GLCameraExample.iml" filepath="$PROJECT_DIR$/GLCameraExample/GLCameraExample.iml" />
-      <module fileurl="file://$PROJECT_DIR$/GLCameraProject.iml" filepath="$PROJECT_DIR$/GLCameraProject.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glcamera.iml" filepath="$PROJECT_DIR$/glcamera.iml" />
     </modules>
   </component>
 </project>
