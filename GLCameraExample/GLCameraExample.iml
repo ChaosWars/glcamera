@@ -88,9 +88,9 @@
     <orderEntry type="library" exported="" name="support-v4-22.0.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-6.5.87" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-22.0.0" level="project" />
-    <orderEntry type="library" exported="" name="GLCamera-1.0" level="project" />
     <orderEntry type="library" exported="" name="GLESUtils-1.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-22.0.0" level="project" />
+    <orderEntry type="module" module-name="GLCamera" exported="" />
   </component>
 </module>
 
